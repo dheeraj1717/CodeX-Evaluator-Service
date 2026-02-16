@@ -1,0 +1,6 @@
+import { Request, Response } from "express";
+
+export const pingController = (req: Request, res: Response) => {
+  console.log(req.url);
+  res.status(200).json({ message: "Ping check ok!" });
+};
