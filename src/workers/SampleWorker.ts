@@ -4,7 +4,6 @@ import redisConnection from "../config/redisConfig";
 
 export default function SampleWorker(queueName: string) {
   new Worker(queueName, async (job: Job) => {
-    console.log("Worker started");
     if (job.name === "SampleJob") {
       const sampleJobInstance = new SampleJob(job.data);
       sampleJobInstance.handler(job);
