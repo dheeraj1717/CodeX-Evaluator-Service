@@ -1,7 +1,8 @@
 import { Ilog } from "../types/logDefinition";
 
-const winston = require("winston");
-require("winston-mongodb");
+import winston from "winston";
+import "winston-mongodb";
+import { LOG_DB_URI } from "./serverConfig";
 
 const allowedTransports = [];
 allowedTransports.push(
@@ -12,7 +13,8 @@ allowedTransports.push(
       winston.format.timestamp({
         format: "YYYY-MM-DD HH:mm:ss",
       }),
-      winston.format.printf((log: Ilog) => {
+      winston.format.printf((info) => {
+        const log = info as unknown as Ilog;
         return `${log.timestamp} [${log.level}]: ${log.message} ${log.label ? `[${log.label}]:` : ""} ${log.source ? `[${log.source}]` : ""}`;
       }),
     ),
@@ -22,11 +24,11 @@ allowedTransports.push(
 allowedTransports.push(
   new winston.transports.MongoDB({
     level: "error",
-    db: process.env.LOG_DB_URI,
+    db: LOG_DB_URI,
     collection: "logs",
     capped: true,
     cappedSize: 52428800, // 50MB limit
-    cappedMax: 50000,    // 50,000 logs limit
+    cappedMax: 50000, // 50,000 logs limit
   }),
 );
 
@@ -42,7 +44,8 @@ const logger = winston.createLogger({
     winston.format.timestamp({
       format: "YYYY-MM-DD HH:mm:ss",
     }),
-    winston.format.printf((log: Ilog) => {
+    winston.format.printf((info) => {
+      const log = info as unknown as Ilog;
       return `${log.timestamp} [${log.level.toUpperCase()}]: ${log.message} ${log.label ? `[${log.label}]` : ""} ${log.source ? `[${log.source}]` : ""}`;
     }),
   ),
@@ -50,4 +53,4 @@ const logger = winston.createLogger({
   transports: allowedTransports,
 });
 
-module.exports = logger;
+export default logger;
