@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import CreateSubmissionDto from "../dtos/CreateSubmissionDto";
+import { CreateSubmissionDto } from "../dtos/CreateSubmissionDto";
 
 export function addSubmission(req: Request, res: Response) {
   const submissionDto = req.body as CreateSubmissionDto;

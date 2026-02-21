@@ -9,6 +9,12 @@ function errorHandler(
   _next: NextFunction,
 ) {
   if (error instanceof BaseError) {
+    logger.error(`${error.name}: ${error.message}`, { details: error.details });
+  } else {
+    logger.error(`Internal Server Error: ${error.message}`);
+  }
+
+  if (error instanceof BaseError) {
     return res.status(error.statusCode).json({
       success: false,
       message: error.message,
@@ -16,8 +22,6 @@ function errorHandler(
       details: error.details,
     });
   }
-
-  logger.error(`Internal Server Error: ${error.message}`);
 
   return res.status(500).json({
     success: false,
