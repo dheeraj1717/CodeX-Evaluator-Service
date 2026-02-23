@@ -4,6 +4,7 @@ import apiRouter from "./routes";
 import sampleQueueProducer from "./producers/sampleQueueProducer";
 import SampleWorker from "./workers/SampleWorker";
 import errorHandler from "./utils/errorHandler";
+import runPython from "./containers/runPythonDocker";
 
 const app = express();
 
@@ -19,9 +20,6 @@ app.listen(PORT, () => {
 
   SampleWorker("SampleQueue");
 
-  sampleQueueProducer("SampleJob", {
-    name: "SampleJob",
-    company: "CodeX",
-    position: "Software Engineer",
-  });
+  const code = "print('Hello World')";
+  runPython(code, "");
 });
