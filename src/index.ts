@@ -1,12 +1,10 @@
 import express from "express";
 import { PORT } from "./config/serverConfig";
 import apiRouter from "./routes";
-import sampleQueueProducer from "./producers/sampleQueueProducer";
-import SampleWorker from "./workers/SampleWorker";
 import errorHandler from "./utils/errorHandler";
-import runPython from "./containers/runPythonDocker";
-import runJava from "./containers/runJavaDocker";
 import runCPP from "./containers/runCPPDocker";
+import SubmissionWorker from "./workers/submissionWorker";
+import { SUBMISSION_QUEUE } from "./utils/constants";
 
 const app = express();
 
@@ -20,7 +18,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Evaluator service is running on port ${PORT}`);
 
-  SampleWorker("SampleQueue");
+  SubmissionWorker(SUBMISSION_QUEUE);
 
   const code = `
   #include <iostream>
