@@ -5,6 +5,7 @@ import errorHandler from "./utils/errorHandler";
 import runCPP from "./containers/runCPPDocker";
 import SubmissionWorker from "./workers/submissionWorker";
 import { SUBMISSION_QUEUE } from "./utils/constants";
+import submissionQueueProducer from "./producers/submissionQueueProducer";
 
 const app = express();
 
@@ -17,18 +18,46 @@ app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Evaluator service is running on port ${PORT}`);
+  const userCode = `
+  class Solution {
+    public:
+    vector<int> permute(){
+    vector<int> v;
+    v.push_back(10);
+    return v;
+    }
+  };
+  `;
+const code = `#include <iostream>
+#include <vector>
+using namespace std;
+${userCode}
+int main(){
+Solution s;
+vector<int> result = s.permute();
+for(int i = 0; i < result.size(); i++){
+  cout << result[i] << " ";
+}
+}
+`
+  // const code = `
+  // #include <iostream>
+  // using namespace std;
+  // int main() {
+  //   int a, b;
+  //   cin >> a >> b;
+  //   cout << a + b << endl;
+  //   return 0;
+  // }
+  // `;
+  const inputCase = `10`;
 
   SubmissionWorker(SUBMISSION_QUEUE);
-
-  const code = `
-  #include <iostream>
-  using namespace std;
-  int main() {
-    int a, b;
-    cin >> a >> b;
-    cout << a + b << endl;
-    return 0;
-  }
-  `;
-  runCPP(code, "10 20");
+  submissionQueueProducer({
+    "1234":{
+      language:"CPP",
+      inputCase,
+      code
+    }
+  })
 });
