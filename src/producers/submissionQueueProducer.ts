@@ -1,5 +1,6 @@
 import submissionQueue from "../queues/submissionQueue";
 
 export default async function (payload: Record<string, unknown>) {
-  await submissionQueue.add("submissionJob", payload);
+  await submissionQueue.add("SubmissionJob", payload);
+  console.log("Successfully added a new job to the queue");
 }

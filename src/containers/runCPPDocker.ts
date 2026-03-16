@@ -27,7 +27,7 @@ async function runCPP(code: string, inputTestCase: string) {
   // attach events on the stream objects to start and stop reading
   loggerStream.on("data", (chunk) => rawLogBuffer.push(chunk));
 
-  await new Promise((res) => {
+  const response = await new Promise((res) => {
     loggerStream.on("end", () => {
       console.log("rawLogBuffer", rawLogBuffer);
       const completeBuffer = Buffer.concat(rawLogBuffer);
@@ -37,6 +37,7 @@ async function runCPP(code: string, inputTestCase: string) {
     });
   });
   await cppDockerContainer.remove();
+  return response;
 }
 
 export default runCPP;
