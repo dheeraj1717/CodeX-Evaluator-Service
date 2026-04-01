@@ -1,7 +1,7 @@
 import { Job } from "bullmq";
 import { IJob } from "../types/bullMqJobDefinition";
 import { SubmissionPayload } from "../types/submissionPayload";
-import runCPP from "../containers/runCPPDocker";
+import createExecutor from "../utils/executorFactory";
 
 export default class SubmissionJob implements IJob {
   name: string;
@@ -14,13 +14,25 @@ export default class SubmissionJob implements IJob {
     console.log(this.payload);
     console.log("handler of the job called");
     if (job) {
-     const key = Object.keys(this.payload)[0]
-     if(this.payload[key].language === "CPP"){
-     const response = await runCPP(this.payload[key].code,this.payload[key].inputCase)
-     console.log("Evaluated response",response)
-     }
+      const key = Object.keys(this.payload)[0];
+      const codeLanguage = this.payload[key].language.toUpperCase();
+      const executor = createExecutor(codeLanguage);
+      if(!executor){
+        throw new Error("Invalid language");
+      }
+      const response = await executor.execute(
+        this.payload[key].code,
+        this.payload[key].inputCase,
+      );
+      if(response.status === "ERROR"){
+        throw new Error(response.output);
+      }
+      if(response.status === "COMPLETED"){
+        console.log("Code executed successfully");
+        console.log(response.output);
+      }
     }
-  }
+  };
   failed(job: Job): void {
     console.log("job failed");
     if (job) {

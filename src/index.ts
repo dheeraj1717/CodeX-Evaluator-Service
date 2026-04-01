@@ -2,7 +2,7 @@ import express from "express";
 import { PORT } from "./config/serverConfig";
 import apiRouter from "./routes";
 import errorHandler from "./utils/errorHandler";
-import runCPP from "./containers/runCPPDocker";
+import runCPP from "./containers/cppExecutor";
 import SubmissionWorker from "./workers/submissionWorker";
 import { SUBMISSION_QUEUE } from "./utils/constants";
 import submissionQueueProducer from "./producers/submissionQueueProducer";
@@ -28,7 +28,7 @@ app.listen(PORT, () => {
     }
   };
   `;
-const code = `#include <iostream>
+  const code = `#include <iostream>
 #include <vector>
 using namespace std;
 ${userCode}
@@ -39,7 +39,7 @@ for(int i = 0; i < result.size(); i++){
   cout << result[i] << " ";
 }
 }
-`
+`;
   // const code = `
   // #include <iostream>
   // using namespace std;
@@ -54,10 +54,10 @@ for(int i = 0; i < result.size(); i++){
 
   SubmissionWorker(SUBMISSION_QUEUE);
   submissionQueueProducer({
-    "1234":{
-      language:"CPP",
+    "1234": {
+      language: "CPP",
       inputCase,
-      code
-    }
-  })
+      code,
+    },
+  });
 });
