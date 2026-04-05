@@ -1,11 +1,11 @@
 import createContainer from "./containerFactory";
 import { PYTHON_IMAGE } from "../utils/constants";
-import decodeDockerStream, { fetchDecodedStream } from "./dockerHelper";
+import { fetchDecodedStream } from "./dockerHelper";
 import pullImage from "./pullImage";
 import CodeExecutorStrategy, { ExecutionResponse } from "../types/CodeExecutorStrategy";
 
 class PythonExecutor implements CodeExecutorStrategy {
-  async execute(code: string, inputTestCase: string): Promise<ExecutionResponse> {
+  async execute(code: string, inputTestCase: string, outputTestCase: string): Promise<ExecutionResponse> {
     const rawLogBuffer: Buffer[] = [];
     await pullImage(PYTHON_IMAGE);
     console.log("Initialising a new python docker container");
@@ -31,7 +31,7 @@ class PythonExecutor implements CodeExecutorStrategy {
 
     try {
       const codeResponse: string = await fetchDecodedStream(loggerStream, rawLogBuffer);
-      return {output: codeResponse, status: "COMPLETED"};
+      return {output: codeResponse, status: "SUCCESS"};
     } catch (error) {
       return {output: error as string, status: "ERROR"};
     } finally {

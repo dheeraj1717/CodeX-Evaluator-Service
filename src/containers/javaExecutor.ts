@@ -5,7 +5,7 @@ import pullImage from "./pullImage";
 import CodeExecutorStrategy, { ExecutionResponse } from "../types/CodeExecutorStrategy";
 
 class JavaExecutor implements CodeExecutorStrategy {
-  async execute(code: string, inputTestCase: string): Promise<ExecutionResponse> {
+  async execute(code: string, inputTestCase: string, outputTestCase: string): Promise<ExecutionResponse> {
     const rawLogBuffer: Buffer[] = [];
     console.log("Initialising a new java docker container");
     await pullImage(JAVA_IMAGE);
@@ -31,8 +31,17 @@ class JavaExecutor implements CodeExecutorStrategy {
 
     try {
       const codeResponse: string = await fetchDecodedStream(loggerStream, rawLogBuffer);
-      return {output: codeResponse, status: "COMPLETED"};
+      if(codeResponse.trim() === outputTestCase.trim()){
+        return {output: codeResponse, status: "SUCCESS"};
+      } else {
+        return {output: codeResponse, status: "WA"};
+      }
     } catch (error) {
+      if(error === "TLE"){
+        await javaDockerContainer.kill();
+        console.log("Container stopped", error);
+        return {output: error as string, status: "TLE"};
+      }
       return {output: error as string, status: "ERROR"};
     } finally {
       await javaDockerContainer.remove();

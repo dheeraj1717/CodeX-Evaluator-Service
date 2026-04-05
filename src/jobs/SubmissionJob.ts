@@ -2,6 +2,7 @@ import { Job } from "bullmq";
 import { IJob } from "../types/bullMqJobDefinition";
 import { SubmissionPayload } from "../types/submissionPayload";
 import createExecutor from "../utils/executorFactory";
+import publishEvaluationResult from "../producers/evaluationQueueProducer";
 
 export default class SubmissionJob implements IJob {
   name: string;
@@ -16,20 +17,27 @@ export default class SubmissionJob implements IJob {
     if (job) {
       const key = Object.keys(this.payload)[0];
       const codeLanguage = this.payload[key].language.toUpperCase();
+      const code = this.payload[key].code;
+      const inputTestCase = this.payload[key].inputCase;
+      const outputTestCase = this.payload[key].outputCase;
       const executor = createExecutor(codeLanguage);
-      if(!executor){
+      if (!executor) {
         throw new Error("Invalid language");
       }
       const response = await executor.execute(
-        this.payload[key].code,
-        this.payload[key].inputCase,
+        code,
+        inputTestCase,
+        outputTestCase,
       );
-      if(response.status === "ERROR"){
-        throw new Error(response.output);
-      }
-      if(response.status === "COMPLETED"){
-        console.log("Code executed successfully");
-        console.log(response.output);
+      await publishEvaluationResult({
+        ...response,
+        userId: this.payload[key].userId,
+        submissionId: this.payload[key].submissionId,
+      });
+      if(response.status === "SUCCESS"){
+        console.log("Code executed successfully", response);
+      } else {
+        console.log("Code execution failed", response);
       }
     }
   };

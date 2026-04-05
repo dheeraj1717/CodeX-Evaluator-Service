@@ -1,3 +1,4 @@
+import Dockerode from "dockerode";
 import DockerStreamOutput from "../types/dockerStreamOutput";
 import { DOCKER_STREAM_HEADER_SIZE } from "../utils/constants";
 
@@ -37,8 +38,13 @@ export default function decodeDockerStream(buffer: Buffer): DockerStreamOutput {
 }
 
 export function fetchDecodedStream(loggerStream: NodeJS.ReadableStream, rawLogBuffer: Buffer[]): Promise<string> {
-        return new Promise((res, rej) => {
+  return new Promise((res, rej) => {
+  const timeout = setTimeout(() => {
+    console.log("Container timed out");
+    rej("TLE");
+  }, 5000);
           loggerStream.on("end", () => {
+            clearTimeout(timeout);
             console.log("rawLogBuffer", rawLogBuffer);
             const completeBuffer = Buffer.concat(rawLogBuffer);
             const decodedOutput = decodeDockerStream(completeBuffer);

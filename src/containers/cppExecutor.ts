@@ -10,6 +10,7 @@ class CppExecutor implements CodeExecutorStrategy {
   async execute(
     code: string,
     inputTestCase: string,
+    outputTestCase: string
   ): Promise<ExecutionResponse> {
     const rawLogBuffer: Buffer[] = [];
     console.log("Initialising a new cpp docker container");
@@ -22,7 +23,6 @@ class CppExecutor implements CodeExecutorStrategy {
       "-c",
       runCommand,
     ]);
-    await cppDockerContainer.start();
     console.log("cppDockerContainer", cppDockerContainer);
     const loggerStream = await cppDockerContainer.logs({
       stdout: true,
@@ -37,9 +37,9 @@ class CppExecutor implements CodeExecutorStrategy {
     try {
       const codeResponse: string = await fetchDecodedStream(
         loggerStream,
-        rawLogBuffer,
+        rawLogBuffer
       );
-      return { output: codeResponse, status: "COMPLETED" };
+      return { output: codeResponse, status: "SUCCESS" };
     } catch (error) {
       return { output: error as string, status: "ERROR" };
     } finally {

@@ -53,11 +53,11 @@ for(int i = 0; i < result.size(); i++){
   const inputCase = `10`;
 
   SubmissionWorker(SUBMISSION_QUEUE);
-  submissionQueueProducer({
-    "1234": {
-      language: "CPP",
-      inputCase,
-      code,
-    },
-  });
+  // submissionQueueProducer({
+  //   "1234": {
+  //     language: "CPP",
+  //     inputCase,
+  //     code,
+  //   },
+  // });
 });
