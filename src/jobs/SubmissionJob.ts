@@ -18,26 +18,43 @@ export default class SubmissionJob implements IJob {
       const key = Object.keys(this.payload)[0];
       const codeLanguage = this.payload[key].language.toUpperCase();
       const code = this.payload[key].code;
-      const inputTestCase = this.payload[key].inputCase;
-      const outputTestCase = this.payload[key].outputCase;
+      const testCases = this.payload[key].testCases;
+      
       const executor = createExecutor(codeLanguage);
       if (!executor) {
         throw new Error("Invalid language");
       }
-      const response = await executor.execute(
-        code,
-        inputTestCase,
-        outputTestCase,
-      );
+
+      const testCaseResults = [];
+      let overallStatus = "SUCCESS";
+
+      for (const tc of testCases) {
+        const response = await executor.execute(
+          code,
+          tc.input,
+          tc.output,
+        );
+        testCaseResults.push({
+          input: tc.input,
+          output: response.output,
+          expected: tc.output,
+          status: response.status
+        });
+        if (response.status !== "SUCCESS" && overallStatus === "SUCCESS") {
+          overallStatus = response.status;
+        }
+      }
+
       await publishEvaluationResult({
-        ...response,
+        testCaseResults,
+        status: overallStatus,
         userId: this.payload[key].userId,
         submissionId: this.payload[key].submissionId,
       });
-      if(response.status === "SUCCESS"){
-        console.log("Code executed successfully", response);
+      if(overallStatus === "SUCCESS"){
+        console.log("Batch code execution successful");
       } else {
-        console.log("Code execution failed", response);
+        console.log("Batch code execution failed with status:", overallStatus);
       }
     }
   };

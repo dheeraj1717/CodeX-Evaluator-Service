@@ -2,7 +2,6 @@ export type SubmissionPayload = {
     submissionId: string;
     language: string;
     code: string;
-    inputCase: string;
-    outputCase: string;
+    testCases: { input: string; output: string }[];
     userId: string;
 }
